@@ -14,12 +14,13 @@ class DataOperations:
         pass
 
     def loadData(self, fileName):
-        dataset = pd.read_csv(fileName)
+        dataset = pd.read_csv(fileName, index_col=None)
+        dataset.reset_index(drop=True, inplace=True)
         return dataset
 
     def writeCSV(self, dataFrame, fileName):
         fileName = fileName + '.csv'
-        dataFrame.to_csv(fileName, sep=',', encoding='utf-8')
+        dataFrame.to_csv(fileName, sep=',', encoding='utf-8', index=None)
         print("Writing file finished")
 
     def debtTypeStats(self, dataFrame, columnName):
@@ -44,14 +45,17 @@ class DataOperations:
                 tempList.append(data)
 
         processedDataset.drop(processedDataset.index[tempList], inplace=True)
+        processedDataset.drop('projectname', axis=1, inplace=True)
+        processedDataset.reset_index(drop=True, inplace=True)
         return processedDataset
 
-
+'''
 dataOperations = DataOperations()
-inputFile = dataOperations.loadData("Dataset/technical_debt_dataset.csv")
+inputFile = dataOperations.loadData("../Dataset/technical_debt_dataset.csv")
 
 dataOperations.debtTypeStats(inputFile, "classification")
 
 processedDataset = dataOperations.filterDataFrame(inputFile, "WITHOUT_CLASSIFICATION")
 
-dataOperations.writeCSV(processedDataset, "Dataset/processedDataset")
+dataOperations.writeCSV(processedDataset, "../Dataset/processedDataset")'''
+
