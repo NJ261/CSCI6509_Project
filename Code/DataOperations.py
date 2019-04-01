@@ -3,10 +3,11 @@
 """
 Created on Thu Mar  7 23:03:15 2019
 
-@author: Nirav
+@author: Nirav, Supriya
 """
 # load original dataset, summary regarding comments and deleted not required section which is here 'WITHOUT_CLASSIFICATION'
 import pandas as pd
+import re
 
 class DataOperations:
 
@@ -48,6 +49,34 @@ class DataOperations:
         processedDataset.drop('projectname', axis=1, inplace=True)
         processedDataset.reset_index(drop=True, inplace=True)
         return processedDataset
+    
+    def debtTypeModifications(self, dataFrame):
+        otherDebtType = ['DOCUMENTATION', 'TEST']
+        requirementDebtType = ['IMPLEMENTATION', 'DEFECT']
+        
+        for i in range(0, len(otherDebtType)):
+            dataFrame.loc[dataFrame['classification'] == otherDebtType[i], 'classification'] = 'OTHERS'
+                
+        for j in range(0, len(requirementDebtType)):
+            dataFrame.loc[dataFrame['classification'] == requirementDebtType[i], 'classification'] = 'REQUIREMENT'
+            
+        return dataFrame
+    
+    def removeChracters(self, dataFrame):
+        tempList = list(dataFrame['commenttext'])
+        specialChars = '[{0}]'.format('@#://().",*-;\[\]')
+        for i in range(0, len(tempList)):
+            line = re.sub(specialChars, '', tempList[i].lower())
+            # html tags removal
+            #line = re.sub('<[^>]*>', '', line)
+            
+            # stemming
+            #from nltk.stem import PorterStemmer
+            #ps = PorterStemmer()
+            #line = [ps.stem(word) for word in line.split()]
+            #line = " ".join(str(x) for x in line)
+            dataFrame.iloc[i, dataFrame.columns.get_loc('commenttext')] = line
+            
 
 '''
 dataOperations = DataOperations()
