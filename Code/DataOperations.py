@@ -6,6 +6,9 @@ Created on Thu Mar  7 23:03:15 2019
 @author: Nirav, Supriya
 """
 # load original dataset, summary regarding comments and deleted not required section which is here 'WITHOUT_CLASSIFICATION'
+from nltk.corpus import stopwords
+from nltk.tokenize import TweetTokenizer
+from collections import Counter
 import pandas as pd
 import re
 
@@ -62,20 +65,43 @@ class DataOperations:
     
     def removeChracters(self, dataFrame):
         tempList = list(dataFrame['commenttext'])
-        specialChars = '[{0}]'.format('@#://().",*-;\[\]')
+        specialChars = '[{0}]'.format("@#://().,$><%`~*-;\[\]=\"\'\{\}\|")
+        stopWords = list(set(stopwords.words('english')))
         for i in range(0, len(tempList)):
             line = re.sub(specialChars, '', tempList[i].lower())
-            # html tags removal
-            #line = re.sub('<[^>]*>', '', line)
+            line = re.sub(r"\b[a-zA-Z]\b", "", line) # for removing single char
+            line = line.replace("\\", "") # for removing slash
+            
+            # for removing stop words
+            tempList = list(line.split())
+            tempList = [word for word in tempList if word not in stopWords]
+            line = ' '.join(x for x in tempList)
             
             # stemming
             #from nltk.stem import PorterStemmer
             #ps = PorterStemmer()
             #line = [ps.stem(word) for word in line.split()]
             #line = " ".join(str(x) for x in line)
-            dataFrame.iloc[i, dataFrame.columns.get_loc('commenttext')] = line
             
-
+            # updating dataFrame
+            dataFrame.iloc[i, dataFrame.columns.get_loc('commenttext')] = line
+        return dataFrame
+    
+    def certainDebtTypeWords(self, dataFrame, debtType):
+        tempList = []
+        tokenizer = TweetTokenizer()
+        for elem in range(0, len(dataFrame)):
+            if dataFrame['classification'][elem] == debtType:
+                line = tokenizer.tokenize(dataFrame['commenttext'][elem])
+                tempList.append(line)
+        
+        tempList = [item for sublist in tempList for item in sublist]
+        wordCounter = Counter(tempList)
+        mostCommonWords = wordCounter.most_common(200) # most common 200 words
+        tempList = [elem[0] for elem in mostCommonWords]
+        wordString = ' '.join(x for x in list(set(tempList)))
+        return mostCommonWords, wordString
+            
 '''
 dataOperations = DataOperations()
 inputFile = dataOperations.loadData("../Dataset/technical_debt_dataset.csv")
@@ -85,4 +111,3 @@ dataOperations.debtTypeStats(inputFile, "classification")
 processedDataset = dataOperations.filterDataFrame(inputFile, "WITHOUT_CLASSIFICATION")
 
 dataOperations.writeCSV(processedDataset, "../Dataset/processedDataset")'''
-

@@ -12,12 +12,15 @@ from sklearn.linear_model import LogisticRegression, Perceptron, RidgeClassifier
 from sklearn.svm import LinearSVC
 from sklearn import svm
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import f1_score, precision_score, recall_score
 from keras.utils import to_categorical
 from keras import layers, optimizers
 from keras.models import Sequential
 from DataOperations import DataOperations
 import numpy as np
+import warnings
 
+warnings.filterwarnings("ignore")
 class Model:
     
     def __init__(self, inputDataFrame):
@@ -47,6 +50,17 @@ class Model:
         y_test = to_categorical(y_test)
         return X_train, X_test, y_train, y_test
     
+    def results(self, y_test, y_preds, modelName):
+        average = 'macro'
+        accuracy = np.mean(y_test == y_preds)
+        f1Score = f1_score(y_test, y_preds, average=average)
+        precisionScore = precision_score(y_test, y_preds, average=average)
+        recallScore = recall_score(y_test, y_preds, average=average)
+        
+        print("{0}: ".format(modelName))
+        print("1. Accuracy: {:.3f} \n2. F1 Score: {:.4f} \n3. Precision: {:.4f} \n4. Recall: {:.4f}".format((accuracy*100), f1Score, precisionScore, recallScore))
+        return accuracy, f1Score, precisionScore, recallScore
+    
     def modelPipeline(self, algorithmSpecifications):
         modelPipeline = Pipeline([('vect', CountVectorizer()),
                 ('tfidf', TfidfTransformer()),
@@ -55,48 +69,58 @@ class Model:
         return modelPipeline
     
     def logisticRegression(self):
+
         X_train, X_test, y_train, y_test = self.splitData()
-        logisticRegression = self.modelPipeline(LogisticRegression(n_jobs=20, 
-                                                                   C=1e5, solver='lbfgs', multi_class='multinomial'))
+        logisticRegression = self.modelPipeline(LogisticRegression(n_jobs=20, C=1e5, solver='lbfgs', multi_class='multinomial'))
         logisticRegression.fit(X_train, y_train)
         y_preds = logisticRegression.predict(X_test)
-        print("Logistic Regression Accuracy:  {:.3f}%".format((np.mean(y_test == y_preds))*100))
-        
+        accuracy, f1Score, precisionScore, recallScore = self.results(y_test, y_preds, "Logistic Regression")
+        return accuracy, f1Score, precisionScore, recallScore
+    
     def svmSVC(self):
         X_train, X_test, y_train, y_test = self.splitData()
         svc = self.modelPipeline(svm.SVC(kernel='linear'))
         svc.fit(X_train, y_train)
         y_preds = svc.predict(X_test)
-        print("SVM (SVC with Linear Kernal) Accuracy:  {:.3f}%".format((np.mean(y_test == y_preds))*100))
-        
+        accuracy = np.mean(y_test == y_preds)
+        accuracy, f1Score, precisionScore, recallScore = self.results(y_test, y_preds, "SVC: ")
+        return accuracy, f1Score, precisionScore, recallScore
+    
     def linearSVC(self):
         X_train, X_test, y_train, y_test = self.splitData()
         linearSVC = self.modelPipeline(LinearSVC(random_state=0, tol=1e-5))
         linearSVC.fit(X_train, y_train)
         y_preds = linearSVC.predict(X_test)
-        print("Linear SVC Accuracy:  {:.3f}%".format((np.mean(y_test == y_preds))*100))
-        
+        accuracy = np.mean(y_test == y_preds)
+        accuracy, f1Score, precisionScore, recallScore = self.results(y_test, y_preds, "Linear SVC")
+        return accuracy, f1Score, precisionScore, recallScore
+    
     def naiveBayes(self):
         X_train, X_test, y_train, y_test = self.splitData()
         naiveBayes = self.modelPipeline(MultinomialNB())        
         naiveBayes.fit(X_train, y_train)
         y_preds = naiveBayes.predict(X_test)
-        print("Naive Bayes Accuracy:  {:.3f}%".format((np.mean(y_test == y_preds))*100))        
+        accuracy = np.mean(y_test == y_preds)
+        accuracy, f1Score, precisionScore, recallScore = self.results(y_test, y_preds, "Naive Bayes")
+        return accuracy, f1Score, precisionScore, recallScore       
 
     def perceptron(self):
         X_train, X_test, y_train, y_test = self.splitData()
         perceptron = self.modelPipeline(Perceptron(tol=1e-3, random_state=0)) 
         perceptron.fit(X_train, y_train)
         y_preds = perceptron.predict(X_test)
-        print("Perceptron Linear Accuracy:  {:.3f}%".format((np.mean(y_test == y_preds))*100))
-    
+        accuracy = np.mean(y_test == y_preds)
+        accuracy, f1Score, precisionScore, recallScore = self.results(y_test, y_preds, "Perceptron: ")
+        return accuracy, f1Score, precisionScore, recallScore
         
     def ridgeClassifierCV(self):
         X_train, X_test, y_train, y_test = self.splitData()
         ridgeClassifier = self.modelPipeline(RidgeClassifierCV(alphas=[1e-3, 1e-2, 1e-1, 1]))
         ridgeClassifier.fit(X_train, y_train)
         y_preds = ridgeClassifier.predict(X_test)
-        print("Ridge Classifier Accuracy:  {:.3f}%".format((np.mean(y_test == y_preds))*100))
+        accuracy = np.mean(y_test == y_preds)
+        accuracy, f1Score, precisionScore, recallScore = self.results(y_test, y_preds, "Ridge Classifier: ")
+        return accuracy, f1Score, precisionScore, recallScore
         
     def neuralNetwork(self):
         X_train, X_test, y_train, y_test = self.dataTransformNN()
@@ -117,21 +141,21 @@ class Model:
         model.compile(loss='categorical_crossentropy', 
                       optimizer=optimizers.Adadelta(), metrics=['accuracy'])
         
-        history = model.fit(X_train, y_train, epochs=15,verbose=False, 
+        test = model.fit(X_train, y_train, epochs=15,verbose=False, 
                             validation_data=(X_test, y_test), 
                             batch_size=10)
         loss, accuracy = model.evaluate(X_test, y_test, verbose=False)
         print("Neural Network Accuracy:  {:.3f} %".format(accuracy*100))
+        return test, accuracy
 
 
-
-inputFile = DataOperations().loadData("../Dataset/processedDataset.csv")
-
-model = Model(inputFile)
-model.logisticRegression()
-model.linearSVC()
-model.svmSVC()
-model.naiveBayes()
-model.perceptron()
-model.ridgeClassifierCV()
-model.neuralNetwork()
+#inputFile = DataOperations().loadData("../Dataset/processedDataset.csv")
+#
+#model = Model(inputFile)
+#model.logisticRegression()
+#linearSVCAccuracy = model.linearSVC()
+#svcAccuracy = model.svmSVC()
+#naiveBayesAccuracy = model.naiveBayes()
+#perceptronAccuracy = model.perceptron()
+#ridgeAccuracy = model.ridgeClassifierCV()
+#nnHistory, nnAccuracy =  model.neuralNetwork()
