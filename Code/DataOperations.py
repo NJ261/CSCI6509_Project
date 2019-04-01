@@ -52,12 +52,10 @@ class DataOperations:
     
     def debtTypeModifications(self, dataFrame):
         otherDebtType = ['DOCUMENTATION', 'TEST']
-        requirementDebtType = ['IMPLEMENTATION', 'DEFECT']
+        requirementDebtType = ['DEFECT', 'IMPLEMENTATION']
         
         for i in range(0, len(otherDebtType)):
             dataFrame.loc[dataFrame['classification'] == otherDebtType[i], 'classification'] = 'OTHERS'
-                
-        for j in range(0, len(requirementDebtType)):
             dataFrame.loc[dataFrame['classification'] == requirementDebtType[i], 'classification'] = 'REQUIREMENT'
             
         return dataFrame
