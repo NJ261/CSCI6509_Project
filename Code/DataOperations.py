@@ -31,12 +31,13 @@ class DataOperations:
         columnHeaders = list(set(dataFrame[columnName]))
         columnData = list(dataFrame[columnName])
         count = 0
-
+        
+        print("Types of Debt and no of comments: ")
         for headers in range(0, len(columnHeaders)):
             for data in range(0, len(columnData)):
                 if columnData[data] == columnHeaders[headers]:
                     count += 1
-            print(columnHeaders[headers], count)
+            print("{0}. {1} : {2}".format(headers+1,str(columnHeaders[headers]).lower(), count))
             count = 0
 
     def filterDataFrame(self, dataFrame, debtType):
@@ -73,9 +74,9 @@ class DataOperations:
             line = line.replace("\\", "") # for removing slash
             
             # for removing stop words
-            tempList = list(line.split())
-            tempList = [word for word in tempList if word not in stopWords]
-            line = ' '.join(x for x in tempList)
+            temp = list(line.split())
+            temp = [word for word in temp if word not in stopWords]
+            line = ' '.join(x for x in temp)
             
             # stemming
             #from nltk.stem import PorterStemmer
@@ -102,12 +103,3 @@ class DataOperations:
         wordString = ' '.join(x for x in list(set(tempList)))
         return mostCommonWords, wordString
             
-'''
-dataOperations = DataOperations()
-inputFile = dataOperations.loadData("../Dataset/technical_debt_dataset.csv")
-
-dataOperations.debtTypeStats(inputFile, "classification")
-
-processedDataset = dataOperations.filterDataFrame(inputFile, "WITHOUT_CLASSIFICATION")
-
-dataOperations.writeCSV(processedDataset, "../Dataset/processedDataset")'''

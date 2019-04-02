@@ -16,7 +16,7 @@ from sklearn.metrics import f1_score, precision_score, recall_score
 from keras.utils import to_categorical
 from keras import layers, optimizers
 from keras.models import Sequential
-from DataOperations import DataOperations
+from Code.DataOperations import DataOperations
 import numpy as np
 import warnings
 
@@ -63,9 +63,9 @@ class Model:
     
     def modelPipeline(self, algorithmSpecifications):
         modelPipeline = Pipeline([('vect', CountVectorizer()),
-                ('tfidf', TfidfTransformer()),
-                ('clf', algorithmSpecifications),
-               ])
+                                ('tfidf', TfidfTransformer()),
+                                ('clf', algorithmSpecifications),
+                               ])
         return modelPipeline
     
     def logisticRegression(self):
@@ -79,11 +79,11 @@ class Model:
     
     def svmSVC(self):
         X_train, X_test, y_train, y_test = self.splitData()
-        svc = self.modelPipeline(svm.SVC(kernel='linear'))
+        svc = self.modelPipeline(svm.SVC(kernel='rbf'))
         svc.fit(X_train, y_train)
         y_preds = svc.predict(X_test)
         accuracy = np.mean(y_test == y_preds)
-        accuracy, f1Score, precisionScore, recallScore = self.results(y_test, y_preds, "SVC: ")
+        accuracy, f1Score, precisionScore, recallScore = self.results(y_test, y_preds, "SVC")
         return accuracy, f1Score, precisionScore, recallScore
     
     def linearSVC(self):
@@ -138,24 +138,8 @@ class Model:
 
         # output layer
         model.add(layers.Dense(3, activation='softmax'))
-        model.compile(loss='categorical_crossentropy', 
-                      optimizer=optimizers.Adadelta(), metrics=['accuracy'])
-        
-        test = model.fit(X_train, y_train, epochs=15,verbose=False, 
-                            validation_data=(X_test, y_test), 
-                            batch_size=10)
+        model.compile(loss='categorical_crossentropy', optimizer=optimizers.Adadelta(), metrics=['accuracy'])
+        test = model.fit(X_train, y_train, epochs=15,verbose=False, validation_data=(X_test, y_test), batch_size=10)
         loss, accuracy = model.evaluate(X_test, y_test, verbose=False)
         print("Neural Network Accuracy:  {:.3f} %".format(accuracy*100))
         return test, accuracy
-
-
-#inputFile = DataOperations().loadData("../Dataset/processedDataset.csv")
-#
-#model = Model(inputFile)
-#model.logisticRegression()
-#linearSVCAccuracy = model.linearSVC()
-#svcAccuracy = model.svmSVC()
-#naiveBayesAccuracy = model.naiveBayes()
-#perceptronAccuracy = model.perceptron()
-#ridgeAccuracy = model.ridgeClassifierCV()
-#nnHistory, nnAccuracy =  model.neuralNetwork()

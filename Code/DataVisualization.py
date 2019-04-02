@@ -29,9 +29,9 @@ class DataVisualization:
         plt.title('Accuracy Comparison')
         plt.xlabel('model name')
         plt.ylabel('model accuracy') 
-        plt.axvline(x=11,linewidth=1, color='k')
+        plt.axvline(x=0.75,linewidth=1, color='k')
         for i, v in enumerate(y):
-            ax.text(v + 0.5, i + .125, str(v), fontweight='bold')   
+            ax.text(v + 0.1, i + .06, str(v), fontweight='bold')   
         plt.show()
         
     def lineGraph(self, firstValue, secondValue):
@@ -45,7 +45,7 @@ class DataVisualization:
         
     def wordCloud(self, wordString):
         wordcloud = WordCloud(max_font_size=30, background_color='white').generate(wordString)
-        plt.figure(figsize=(13, 13))
+        plt.figure(figsize=(11, 11))
         plt.imshow(wordcloud, interpolation="bilinear")
         plt.axis("off")
         plt.show()
