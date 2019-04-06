@@ -19,6 +19,7 @@ class DataOperations:
 
     def loadData(self, fileName):
         dataset = pd.read_csv(fileName, index_col=None)
+        dataset.dropna(inplace=True)
         dataset.reset_index(drop=True, inplace=True)
         return dataset
 
