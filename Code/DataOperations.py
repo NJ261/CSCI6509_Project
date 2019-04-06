@@ -67,10 +67,14 @@ class DataOperations:
     
     def removeChracters(self, dataFrame):
         tempList = list(dataFrame['commenttext'])
+        regexForCodeList = ["(\n)", " //(.+?);", " //(.+?)\(\)", "{(.+?)}", "<(.+?)>", "\((.+?)\)", "@(.+?) "]
         specialChars = '[{0}]'.format("@#://().,$><%`~*-;\[\]=\"\'\{\}\|")
         stopWords = list(set(stopwords.words('english')))
         for i in range(0, len(tempList)):
-            line = re.sub(specialChars, '', tempList[i].lower())
+            line = tempList[i].lower()
+            for j in range(0, len(regexForCodeList)):
+                line = re.sub(regexForCodeList[j], '', line)
+            line = re.sub(specialChars, '', line)
             line = re.sub(r"\b[a-zA-Z]\b", "", line) # for removing single char
             line = line.replace("\\", "") # for removing slash
             
